@@ -181,7 +181,7 @@ title('Texte élargi des cadres de sélection');
 % Calcule le taux de recouvrement 
 overlapRatio = bboxOverlapRatio(expandedBBoxes, expandedBBoxes);
 
-% Définissez le rapport de recouvrement entre un cadre de sélection et lui-même sur zéro pour % simplifier la représentation du graphique. 
+% Définissez le rapport de recouvrement entre un cadre de sélection et lui-même sur zéro pour simplifier la représentation du graphique. 
 n = size(overlapRatio,1); 
 overlapRatio(1:n+1:n^2) = 0;
 
@@ -211,3 +211,5 @@ figure(9);
 imshow(ITextRegion);
 title('Texte détecté');
 
+ocrtxt = ocr(I, textBBoxes);
+[ocrtxt.Text]
