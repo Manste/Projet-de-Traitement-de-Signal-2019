@@ -11,18 +11,16 @@ classdef app < matlab.apps.AppBase
         x1EditField            matlab.ui.control.NumericEditField
         y1EditFieldLabel       matlab.ui.control.Label
         y1EditField            matlab.ui.control.NumericEditField
+        x2Label                matlab.ui.control.Label
+        x2EditField_2          matlab.ui.control.NumericEditField
         y2EditFieldLabel       matlab.ui.control.Label
         y2EditField            matlab.ui.control.NumericEditField
-        x2EditFieldLabel       matlab.ui.control.Label
-        x2EditField            matlab.ui.control.NumericEditField
     end
 
-
+    
     properties (Access = private)
         I = [] % Image
         I2 = []% Image scindée
-        premiereLettre = ""%premieae lettre du clavier
-        premiereLigne = ""
         message = ""
         toutesLesLignes = []
     end
@@ -30,8 +28,8 @@ classdef app < matlab.apps.AppBase
     methods (Access = private)
         
         function results = scinder_image(app)
-            longueur = app.x2EditField.Value - app.x1EditField.Value;
-            largeur = app.y2EditField.Value - app.y1EditField.Value;
+            longueur = app.y2EditField.Value - app.x1EditField.Value;
+            largeur = app.x2EditField_2.Value - app.y1EditField.Value;
             app.I2= imcrop(app.I, [app.x1EditField.Value app.y1EditField.Value longueur largeur]);
             figure(2);
             imshow(app.I2);
@@ -39,22 +37,8 @@ classdef app < matlab.apps.AppBase
         end
         
         function results = traitement(app)
-            %Convertir une image en couleur en gris
-            %Igris = rgb2gray(app.I2);
-            
-            %results = ocr(Igris);
-            
-            %BW = imbinarize(Igris);
-            
-            %figure(3); 
-            %imshowpair(app.I2,BW,'montage');
             
             Icorrected = imtophat(app.I2,strel('disk',15));
-            
-            %BW1 = imbinarize(Icorrected);
-            
-            %figure(4); 
-            %imshowpair(Icorrected,BW1,'montage');
             
             marker = imerode(Icorrected, strel('line',10,0));
             Iclean = imreconstruct(marker, Icorrected);
@@ -65,38 +49,36 @@ classdef app < matlab.apps.AppBase
             %imshowpair(Iclean,BW2,'montage');
             
             results = ocr(BW2,'TextLayout','Block');
+            app.toutesLesLignes = strsplit(results.Text, "\n");            
             
-            app.toutesLesLignes = strsplit(results.Text, "\n");
-            app.premiereLigne = strsplit(char(app.toutesLesLignes(3)), " ");
-            
-            app.premiereLettre = char(app.premiereLigne(2));
-            
+            app.message = "";
             verifierPremiereLettre(app);
         end
         
         function results = verifierPremiereLettre(app)
             close all;
-            indexA = strfind(char(app.toutesLesLignes(3)), 'A');
-            indexQ = strfind(char(app.toutesLesLignes(5)), 'Q');
-            indexM = strfind(char(app.toutesLesLignes(5)), 'M');
-             if(~isempty(indexA))  || (~isempty(indexQ))  || (~isempty(indexM)) 
-                indexArobase = strfind(char(app.toutesLesLignes(2)), '@');
-                indexHum = strfind(char(app.toutesLesLignes(2)), '§');
-                if((~isempty(indexHum)) || ((~isempty(indexArobase)) && indexArobase < length(app.premiereLettre)/2))
+
+            testA = contains(app.toutesLesLignes(3), 'A');
+            testQ = contains(app.toutesLesLignes(5), 'Q');
+            testM = contains(app.toutesLesLignes(5), 'M');
+            
+	    testQw = contains(app.toutesLesLignes(2), '€');
+            %testAw = contains(app.toutesLesLignes(2), 'A');
+	    testEt = contains(app.toutesLesLignes(1), '&');
+
+             if(testA || testQ || testM)
+                 testHum = contains(app.toutesLesLignes(2), '§');
+                 indexArobase = strfind(char(app.toutesLesLignes(2)), '@');
+                if(testHum || (~isempty(indexArobase) && indexArobase < length(app.premiereLettre)/2))
                     app.message = "AZERTY Belge";
                 else
                     app.message = "AZERTY Français";
                 end   
-             end             
-            indexEuro = strfind(char(app.toutesLesLignes(4)), '€');
-            indexQ = strfind(char(app.toutesLesLignes(3)), 'Q');
-            indexEt = strfind(char(app.toutesLesLignes(1)), '&');
-            
-            if(~isempty(indexQ))
-                app.message = "QWERTY"
-            else
-                app.message = "Inconnu"
-            end    
+             elseif (testQw || testEt)
+                app.message = "QWERTY";
+	     else 
+		app.message = "inconnu";
+            end   
         end
     end
     
@@ -119,7 +101,7 @@ classdef app < matlab.apps.AppBase
 
         % Button pushed function: ChargeruneimageButton
         function ChargeruneimageButtonPushed(app, event)
-            [file,~]=uigetfile({'.jpg';'.bmp';'.gif';'.tiff'}, 'Select file');
+            [file,~]=uigetfile({'*.jpg';'*.bmp';'*.gif';'*.tiff'}, 'Select file');
             if file
                 app.Image2.ImageSource = file;
                 app.I = imread(file);
@@ -193,6 +175,17 @@ classdef app < matlab.apps.AppBase
             app.y1EditField.Limits = [0 Inf];
             app.y1EditField.Position = [113 371 100 22];
 
+            % Create x2Label
+            app.x2Label = uilabel(app.UIFigure);
+            app.x2Label.HorizontalAlignment = 'right';
+            app.x2Label.Position = [73 323 25 22];
+            app.x2Label.Text = 'x2:';
+
+            % Create x2EditField_2
+            app.x2EditField_2 = uieditfield(app.UIFigure, 'numeric');
+            app.x2EditField_2.Limits = [0 Inf];
+            app.x2EditField_2.Position = [113 323 100 22];
+
             % Create y2EditFieldLabel
             app.y2EditFieldLabel = uilabel(app.UIFigure);
             app.y2EditFieldLabel.HorizontalAlignment = 'right';
@@ -203,17 +196,6 @@ classdef app < matlab.apps.AppBase
             app.y2EditField = uieditfield(app.UIFigure, 'numeric');
             app.y2EditField.Limits = [0 Inf];
             app.y2EditField.Position = [113 269 100 22];
-
-            % Create x2EditFieldLabel
-            app.x2EditFieldLabel = uilabel(app.UIFigure);
-            app.x2EditFieldLabel.HorizontalAlignment = 'right';
-            app.x2EditFieldLabel.Position = [73 321 25 22];
-            app.x2EditFieldLabel.Text = 'x2:';
-
-            % Create x2EditField
-            app.x2EditField = uieditfield(app.UIFigure, 'numeric');
-            app.x2EditField.Limits = [0 Inf];
-            app.x2EditField.Position = [113 321 100 22];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
