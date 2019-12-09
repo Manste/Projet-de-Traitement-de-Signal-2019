@@ -17,11 +17,11 @@ classdef app < matlab.apps.AppBase
         x2EditField            matlab.ui.control.NumericEditField
     end
 
-
+    
     properties (Access = private)
         I = [] % Image
         I2 = []% Image scindée
-        premiereLettre = ""%premieae lettre du clavier
+        premiereLettre = ""%premiere lettre du clavier
         premiereLigne = ""
         message = ""
         toutesLesLignes = []
@@ -39,15 +39,6 @@ classdef app < matlab.apps.AppBase
         end
         
         function results = traitement(app)
-            %Convertir une image en couleur en gris
-            %Igris = rgb2gray(app.I2);
-            
-            %results = ocr(Igris);
-            
-            %BW = imbinarize(Igris);
-            
-            %figure(3); 
-            %imshowpair(app.I2,BW,'montage');
             
             Icorrected = imtophat(app.I2,strel('disk',15));
             
@@ -70,33 +61,36 @@ classdef app < matlab.apps.AppBase
             app.premiereLigne = strsplit(char(app.toutesLesLignes(3)), " ");
             
             app.premiereLettre = char(app.premiereLigne(2));
+         
+            %app.message = results.Text;
             
-            verifierPremiereLettre(app);
+           verifierPremiereLettre(app);
         end
         
         function results = verifierPremiereLettre(app)
             close all;
-            indexA = strfind(char(app.toutesLesLignes(3)), 'A');
-            indexQ = strfind(char(app.toutesLesLignes(5)), 'Q');
-            indexM = strfind(char(app.toutesLesLignes(5)), 'M');
-             if(~isempty(indexA))  || (~isempty(indexQ))  || (~isempty(indexM)) 
-                indexArobase = strfind(char(app.toutesLesLignes(2)), '@');
-                indexHum = strfind(char(app.toutesLesLignes(2)), '§');
-                if((~isempty(indexHum)) || ((~isempty(indexArobase)) && indexArobase < length(app.premiereLettre)/2))
+
+            testA = contains(app.toutesLesLignes(3), 'A');
+            testQ = contains(app.toutesLesLignes(5), 'Q');
+            testM = contains(app.toutesLesLignes(5), 'M');
+            
+	    testQw = contains(app.toutesLesLignes(2), '€');
+            %testAw = contains(app.toutesLesLignes(2), 'A');
+	    testEt = contains(app.toutesLesLignes(1), '&');
+
+             if(testA || testQ || testM)
+                 testHum = contains(app.toutesLesLignes(2), '§');
+                 indexArobase = strfind(char(app.toutesLesLignes(2)), '@');
+                if(testHum || (~isempty(indexArobase) && indexArobase < length(app.premiereLettre)/2))
                     app.message = "AZERTY Belge";
                 else
                     app.message = "AZERTY Français";
                 end   
-             end             
-            indexEuro = strfind(char(app.toutesLesLignes(4)), '€');
-            indexQ = strfind(char(app.toutesLesLignes(3)), 'Q');
-            indexEt = strfind(char(app.toutesLesLignes(1)), '&');
-            
-            if(~isempty(indexQ))
-                app.message = "QWERTY"
-            else
-                app.message = "Inconnu"
-            end    
+             elseif (testQw || testEt)
+                app.message = "QWERTY";
+	     else 
+		app.message = "inconnu";
+            end   
         end
     end
     
@@ -152,7 +146,7 @@ classdef app < matlab.apps.AppBase
             app.VeuillezintroduirevotreimageLabel.FontSize = 16;
             app.VeuillezintroduirevotreimageLabel.FontWeight = 'bold';
             app.VeuillezintroduirevotreimageLabel.FontColor = [1 1 1];
-            app.VeuillezintroduirevotreimageLabel.Position = [170 35 331 50];
+            app.VeuillezintroduirevotreimageLabel.Position = [170 11 397 101];
             app.VeuillezintroduirevotreimageLabel.Text = 'Veuillez introduire votre image';
 
             % Create TraiterlimageButton
