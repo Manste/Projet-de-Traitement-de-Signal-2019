@@ -12,11 +12,11 @@ impixelinfo;
 %Segmentation et extraction de l'image contenant du bruit
 I= imcrop(I, [65 539 2546-65 1226-539]);
 %I= imcrop(I, [59 172 579-59 336-172]);
-%{
+
 figure(2);
 imshow(I);
 title('Image scindée contenant du bruit');
-%}
+
 
 %Convertir une image en couleur en gris
 Igris = rgb2gray(I);
@@ -50,5 +50,11 @@ premiereLigne = strsplit(char(toutesLesLignes(3)), " ");
 
 premiereLettre = char(premiereLigne(2));
 
-%debut2Ligne =cellstr(reshape(char(toutesLesLignes(2)), 12, [])')
 
+indexArobase = strfind(char(toutesLesLignes(2)), '@');
+indexHum = strfind(char(toutesLesLignes(2)), '§');
+
+%debut2Ligne =cellstr(reshape(char(toutesLesLignes(2)), 12, [])')
+if( contains(toutesLesLignes(3), 'A') || contains(toutesLesLignes(5), 'Q') || contains (toutesLesLignes(6)
+    element = "bonjour"
+end    
